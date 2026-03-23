@@ -1,0 +1,76 @@
+{% extends 'detection/base.html' %}
+{% block title %}Patients — RetinaScan AI{% endblock %}
+{% block content %}
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+        <h1 class="page-title">Patients</h1>
+        <p class="page-subtitle">Manage your patient records and retinal scan history</p>
+    </div>
+    <a href="{% url 'add_patient' %}" class="btn btn-accent">
+        <i class="bi bi-person-plus me-2"></i>Add Patient
+    </a>
+</div>
+
+<div class="card-custom mb-4">
+    <div class="card-body-custom p-3">
+        <form method="get" action="">
+            <div class="row g-2 align-items-center">
+                <div class="col">
+                    <div style="position:relative">
+                        <i class="bi bi-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted)"></i>
+                        <input type="text" name="search" value="{{ search_query }}" class="form-control"
+                               placeholder="Search by patient name..." style="padding-left:2.2rem">
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-ghost">Search</button>
+                    {% if search_query %}<a href="{% url 'patient_list' %}" class="btn btn-ghost ms-1">Clear</a>{% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if patients %}
+<div class="card-custom">
+    <div class="card-body-custom p-0">
+        <table class="table table-custom mb-0">
+            <thead>
+                <tr><th>Patient</th><th>Age / Gender</th><th>Diabetes Duration</th><th>Total Scans</th><th>Added</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for patient in patients %}
+                <tr>
+                    <td>
+                        <div style="font-weight:600;font-size:0.92rem">{{ patient.name }}</div>
+                        <div style="color:var(--text-muted);font-size:0.78rem">{{ patient.email|default:"—" }}</div>
+                    </td>
+                    <td style="color:var(--text-secondary)">{{ patient.age }} yrs / {{ patient.get_gender_display }}</td>
+                    <td style="color:var(--text-secondary)">{{ patient.diabetes_duration }} year{{ patient.diabetes_duration|pluralize }}</td>
+                    <td><span style="font-family:var(--font-mono);font-weight:700;color:var(--accent)">{{ patient.scan_count }}</span><span style="color:var(--text-muted);font-size:0.8rem"> scan{{ patient.scan_count|pluralize }}</span></td>
+                    <td style="color:var(--text-muted);font-size:0.82rem">{{ patient.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'patient_detail' patient_id=patient.id %}" class="btn btn-ghost btn-sm"><i class="bi bi-eye"></i> View</a>
+                            <a href="{% url 'analyze' %}" class="btn btn-accent btn-sm"><i class="bi bi-camera"></i> Scan</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card-custom text-center py-5">
+    <div style="font-size:4rem;opacity:0.2;margin-bottom:1rem">👥</div>
+    <h3 style="font-family:var(--font-display);color:var(--text-secondary)">
+        {% if search_query %}No patients matching "{{ search_query }}"{% else %}No patients yet{% endif %}
+    </h3>
+    <p style="color:var(--text-muted);margin-top:0.5rem">
+        {% if search_query %}Try a different search term.{% else %}Add your first patient to start running retinal scans.{% endif %}
+    </p>
+    {% if not search_query %}<a href="{% url 'add_patient' %}" class="btn btn-accent mt-3"><i class="bi bi-person-plus me-2"></i>Add First Patient</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends 'detection/base.html' %}
+{% block title %}Analyze Retinal Scan — RetinaScan AI{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">🔬 Analyze Retinal Scan</h1>
+    <p class="page-subtitle">Upload a fundus image and get instant AI-powered DR severity analysis</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-7">
+        <div class="card-custom">
+            <div class="card-header-custom">
+                <i class="bi bi-upload" style="color:var(--accent)"></i>
+                <span class="card-title-custom">Upload Retinal Image</span>
+            </div>
+            <div class="card-body-custom p-4">
+                <form method="post" action="" enctype="multipart/form-data" id="analyzeForm">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-image me-1"></i>Retinal Fundus Image *</label>
+                        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('imageUpload').click()">
+                            <div class="upload-icon" id="uploadIcon">📷</div>
+                            <p style="color:var(--text-secondary);font-weight:600;margin:0">
+                                Click to upload or drag & drop
+                            </p>
+                            <p style="color:var(--text-muted);font-size:0.82rem;margin-top:0.4rem">
+                                Supports: JPG, PNG, JPEG — Retinal fundus photographs
+                            </p>
+                        </div>
+                        <div style="display:none">{{ form.image }}</div>
+                        {% if form.image.errors %}
+                            <div style="color:#991b1b;font-size:0.8rem;margin-top:0.3rem">{{ form.image.errors.0 }}</div>
+                        {% endif %}
+                        <div id="imagePreview" style="display:none;margin-top:1rem">
+                            <img id="previewImg" src="" alt="Preview"
+                                 style="max-width:100%;border-radius:var(--radius-sm);border:1px solid var(--border)">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-person me-1"></i>Select Patient *</label>
+                        {{ form.patient }}
+                        {% if form.patient.errors %}
+                            <div style="color:#991b1b;font-size:0.8rem;margin-top:0.3rem">{{ form.patient.errors.0 }}</div>
+                        {% endif %}
+                        <div style="margin-top:0.5rem;font-size:0.78rem;color:var(--text-muted)">
+                            Patient not listed?
+                            <a href="{% url 'add_patient' %}" style="color:var(--accent);font-weight:600">Add new patient →</a>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-journal-text me-1"></i>Pre-Analysis Notes (optional)</label>
+                        {{ form.doctor_notes }}
+                    </div>
+
+                    <button type="submit" class="btn btn-accent w-100 py-3" id="submitBtn" style="font-size:1rem;font-weight:700">
+                        <span id="btnText"><i class="bi bi-cpu me-2"></i>Run AI Analysis</span>
+                        <span id="btnLoading" style="display:none">
+                            <span class="spinner-border spinner-border-sm me-2"></span>Analyzing — please wait...
+                        </span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <!-- How it works -->
+        <div class="card-custom mb-4">
+            <div class="card-header-custom">
+                <i class="bi bi-info-circle" style="color:var(--accent)"></i>
+                <span class="card-title-custom">How It Works</span>
+            </div>
+            <div class="card-body-custom p-4">
+                <div class="d-flex flex-column gap-3">
+                    <div class="d-flex gap-3 align-items-start">
+                        <div style="width:28px;height:28px;background:var(--accent-light);border:1.5px solid var(--accent-mid);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:0.8rem;font-weight:700;flex-shrink:0">1</div>
+                        <div>
+                            <div style="font-weight:600;font-size:0.88rem">Upload Retinal Image</div>
+                            <div style="color:var(--text-muted);font-size:0.8rem">Fundus photograph of the patient's retina</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3 align-items-start">
+                        <div style="width:28px;height:28px;background:var(--accent-light);border:1.5px solid var(--accent-mid);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:0.8rem;font-weight:700;flex-shrink:0">2</div>
+                        <div>
+                            <div style="font-weight:600;font-size:0.88rem">ResNet50 Preprocessing</div>
+                            <div style="color:var(--text-muted);font-size:0.8rem">Image resized to 224×224, normalized to ImageNet stats</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3 align-items-start">
+                        <div style="width:28px;height:28px;background:var(--accent-light);border:1.5px solid var(--accent-mid);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:0.8rem;font-weight:700;flex-shrink:0">3</div>
+                        <div>
+                            <div style="font-weight:600;font-size:0.88rem">AI Classification</div>
+                            <div style="color:var(--text-muted);font-size:0.8rem">5-class softmax output with confidence scores</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-3 align-items-start">
+                        <div style="width:28px;height:28px;background:var(--accent-light);border:1.5px solid var(--accent-mid);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:0.8rem;font-weight:700;flex-shrink:0">4</div>
+                        <div>
+                            <div style="font-weight:600;font-size:0.88rem">Grad-CAM Heatmap</div>
+                            <div style="color:var(--text-muted);font-size:0.8rem">Visual explanation of AI focus areas on the retina</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="card-custom">
+            <div class="card-header-custom">
+                <i class="bi bi-lightbulb" style="color:var(--terra)"></i>
+                <span class="card-title-custom">Image Quality Tips</span>
+            </div>
+            <div class="card-body-custom p-4">
+                <div class="d-flex flex-column gap-2">
+                    <div style="font-size:0.85rem;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--accent);font-weight:700">✓</span>Use high-quality fundus photographs</div>
+                    <div style="font-size:0.85rem;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--accent);font-weight:700">✓</span>Ensure proper focus and illumination</div>
+                    <div style="font-size:0.85rem;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--accent);font-weight:700">✓</span>Centered retinal disc preferred</div>
+                    <div style="font-size:0.85rem;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--c-severe);font-weight:700">✗</span>Avoid blurry or underexposed images</div>
+                    <div style="font-size:0.85rem;color:var(--text-secondary);display:flex;gap:8px"><span style="color:var(--c-severe);font-weight:700">✗</span>Avoid extreme glare or artifacts</div>
+                </div>
+                <div class="mt-3 p-3" style="background:var(--terra-light);border:1px solid rgba(196,98,45,0.2);border-radius:var(--radius-sm)">
+                    <p style="font-size:0.8rem;color:var(--terra);margin:0">
+                        ⚠️ <strong>Disclaimer:</strong> This AI tool is for educational use only.
+                        Always consult a qualified ophthalmologist.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const fileInput = document.getElementById('imageUpload');
+const uploadZone = document.getElementById('uploadZone');
+const imagePreview = document.getElementById('imagePreview');
+const previewImg = document.getElementById('previewImg');
+const uploadIcon = document.getElementById('uploadIcon');
+const analyzeForm = document.getElementById('analyzeForm');
+const submitBtn = document.getElementById('submitBtn');
+
+fileInput.addEventListener('change', function() {
+    if (this.files && this.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            previewImg.src = e.target.result;
+            imagePreview.style.display = 'block';
+            uploadZone.style.borderColor = 'var(--accent)';
+            uploadZone.style.background = 'var(--accent-light)';
+            uploadIcon.textContent = '✅';
+        };
+        reader.readAsDataURL(this.files[0]);
+    }
+});
+
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    fileInput.files = e.dataTransfer.files;
+    fileInput.dispatchEvent(new Event('change'));
+});
+
+analyzeForm.addEventListener('submit', () => {
+    document.getElementById('btnText').style.display = 'none';
+    document.getElementById('btnLoading').style.display = 'inline-flex';
+    submitBtn.disabled = true;
+});
+</script>
+{% endblock %}

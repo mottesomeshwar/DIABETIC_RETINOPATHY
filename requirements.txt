@@ -1,0 +1,7 @@
+Django
+torch
+torchvision
+Pillow
+opencv-python
+numpy
+whitenoise  

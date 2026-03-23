@@ -1,0 +1,84 @@
+1. install python 3.10
+
+
+2. Allows PowerShell to run local scripts for current user
+powershell Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+
+3. Creating Virtual Environment
+python -m venv venv
+
+
+4. Activating Virtual Environment
+.\venv\Scripts\activate		- windows
+source venv/bin/activate	- mac
+
+
+5. Upgrade pip install
+python -m pip install --upgrade pip
+
+
+6. Install Libraries
+pip install -r requirements.txt
+
+
+https://we.tl/t-3LDKwlfASo		--Project
+https://we.tl/t-tTZmGx1brB		--Sample Images
+https://we.tl/t-qralzXIm9t		--Project Documentation
+
+
+7. Project Structure
+diabetic_retinopathy_project/       ← Project root (run manage.py from here)
+│
+├── dr_project/                    ← Django project package
+│   ├── __init__.py                ← Makes it a Python package
+│   ├── settings.py                ← ALL configuration (DB, apps, paths)
+│   ├── urls.py                    ← Main URL router
+│   └── wsgi.py                    ← Production server entry point
+│
+├── detection/                     ← Our main app (DR detection logic)
+│   ├── __init__.py
+│   ├── admin.py                   ← Django admin configuration
+│   ├── forms.py                   ← HTML form definitions
+│   ├── models.py                  ← Database tables (Patient, Result, Profile)
+│   ├── urls.py                    ← App-level URL patterns
+│   ├── views.py                   ← Page logic / controllers
+│   ├── migrations/                ← Auto-generated database migrations
+│   └── ml_model/
+│       ├── __init__.py
+│       ├── predictor.py           ← ResNet50 + Grad-CAM inference engine
+│       └── dr_model.pth           ← Trained model weights (you add this)
+│
+├── templates/                     ← HTML templates
+│   └── detection/
+│       ├── add_patient.html       ← Add patient form 
+│       ├── analyze.html           ← Image upload + scan form
+│       ├── base.html              ← Master layout (navbar, footer)
+│       ├── dashboard.html         ← Main dashboard with charts
+│       ├── edit_patient.html      ← Edit patient form
+│       ├── history.html           ← Full scan history
+│       ├── home.html              ← Public landing page
+│       ├── login.html             ← Doctor login page
+│       ├── patient_detail.html    ← One patient's history
+│       ├── patient_list.html      ← All patients
+│       ├── profile.html           ← Doctor profile page
+│       ├── register.html          ← Doctor registration
+│       └── result_detail.html     ← AI result + heatmap view 
+│
+├── manage.py                      ← Django's command-line tool
+├── requirements.txt               ← Python dependencies
+└── db.sqlite3                     ← SQLite database (auto-created)
+
+
+8. Run Your Program:
+python manage.py makemigrations detection
+- `makemigrations` → Django reads your models.py and creates migration files
+  (blueprint files that describe what database tables to create)
+
+python manage.py migrate
+- `migrate` → Django reads those blueprint files and actually creates the tables
+  in db.sqlite3
+
+python manage.py runserver
+Open: http://127.0.0.1:8000  ← Note: Django uses port 8000
+

@@ -1,0 +1,100 @@
+{% extends 'detection/base.html' %}
+{% block title %}Doctor Registration — RetinaScan AI{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-8 col-lg-7">
+
+        <div class="text-center mb-4">
+            <h1 style="font-family:var(--font-display);font-size:1.9rem;font-weight:700;letter-spacing:-0.4px">
+                Create Your Account
+            </h1>
+            <p style="color:var(--text-muted);font-size:0.9rem;margin-top:0.3rem">
+                Join RetinaScan AI — takes less than 2 minutes
+            </p>
+        </div>
+
+        <div class="card-custom">
+            <div class="card-header-custom">
+                <i class="bi bi-person-plus" style="color:var(--accent)"></i>
+                <span class="card-title-custom">Doctor Information</span>
+            </div>
+            <div class="card-body-custom p-4">
+                <form method="post" action="">
+                    {% csrf_token %}
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name *</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}<div style="color:#991b1b;font-size:0.8rem;margin-top:0.3rem">{{ form.first_name.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name *</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}<div style="color:#991b1b;font-size:0.8rem;margin-top:0.3rem">{{ form.last_name.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Username *</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}<div style="color:#991b1b;font-size:0.8rem;margin-top:0.3rem">{{ form.username.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email Address *</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}<div style="color:#991b1b;font-size:0.8rem;margin-top:0.3rem">{{ form.email.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Specialization</label>
+                            {{ form.specialization }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Hospital / Clinic</label>
+                            {{ form.hospital }}
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Phone Number</label>
+                            {{ form.phone }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">License Number</label>
+                            {{ form.license_number }}
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label">Password *</label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}<div style="color:#991b1b;font-size:0.8rem;margin-top:0.3rem">{{ form.password1.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Confirm Password *</label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}<div style="color:#991b1b;font-size:0.8rem;margin-top:0.3rem">{{ form.password2.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-accent w-100 py-2" style="font-size:0.95rem;">
+                        <i class="bi bi-person-check me-2"></i>Create Account
+                    </button>
+                </form>
+
+                <div class="text-center mt-4" style="font-size:0.85rem;color:var(--text-muted)">
+                    Already have an account?
+                    <a href="{% url 'login' %}" style="color:var(--accent);font-weight:700;">Sign in</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

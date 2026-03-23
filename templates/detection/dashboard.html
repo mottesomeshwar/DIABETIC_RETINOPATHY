@@ -1,0 +1,264 @@
+{% extends 'detection/base.html' %}
+{% block title %}Dashboard — RetinaScan AI{% endblock %}
+
+{% block content %}
+
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+        <h1 class="page-title">
+            Good day, Dr. {{ request.user.first_name|default:request.user.username }} 👋
+        </h1>
+        <p class="page-subtitle">Here's a summary of your retinopathy detection activity</p>
+    </div>
+    <a href="{% url 'analyze' %}" class="btn btn-accent">
+        <i class="bi bi-camera me-2"></i>New Scan
+    </a>
+</div>
+
+<!-- STAT CARDS -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-start justify-content-between mb-3">
+                <div>
+                    <div class="stat-number">{{ stats.total_patients }}</div>
+                    <div class="stat-label">Total Patients</div>
+                </div>
+                <div class="stat-icon" style="background:var(--accent-light);color:var(--accent)">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+            <a href="{% url 'patient_list' %}" style="font-size:0.78rem;color:var(--accent);text-decoration:none;font-weight:600">
+                View all <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-start justify-content-between mb-3">
+                <div>
+                    <div class="stat-number">{{ stats.total_scans }}</div>
+                    <div class="stat-label">Total Scans</div>
+                </div>
+                <div class="stat-icon" style="background:var(--bg-mild);color:var(--c-mild)">
+                    <i class="bi bi-camera-fill"></i>
+                </div>
+            </div>
+            <a href="{% url 'history' %}" style="font-size:0.78rem;color:var(--c-mild);text-decoration:none;font-weight:600">
+                View history <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-start justify-content-between mb-3">
+                <div>
+                    <div class="stat-number" style="color:var(--c-severe)">{{ stats.urgent_cases }}</div>
+                    <div class="stat-label">Urgent Cases</div>
+                </div>
+                <div class="stat-icon" style="background:var(--bg-severe);color:var(--c-severe)">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+            </div>
+            <span style="font-size:0.78rem;color:var(--text-muted)">Severe + Proliferative</span>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="d-flex align-items-start justify-content-between mb-3">
+                <div>
+                    <div class="stat-number">
+                        {% if stats.avg_confidence %}{{ stats.avg_confidence|floatformat:0 }}%{% else %}—{% endif %}
+                    </div>
+                    <div class="stat-label">Avg. Confidence</div>
+                </div>
+                <div class="stat-icon" style="background:var(--bg-mod);color:var(--c-mod)">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+            </div>
+            <span style="font-size:0.78rem;color:var(--text-muted)">Model accuracy metric</span>
+        </div>
+    </div>
+</div>
+
+<!-- CHART + RECENT SCANS -->
+<div class="row g-4 mb-4">
+    <div class="col-md-5">
+        <div class="card-custom h-100">
+            <div class="card-header-custom">
+                <i class="bi bi-pie-chart-fill" style="color:var(--accent)"></i>
+                <span class="card-title-custom">DR Severity Distribution</span>
+            </div>
+            <div class="card-body-custom d-flex flex-column align-items-center">
+                {% if stats.total_scans > 0 %}
+                    <canvas id="drChart" style="max-height:200px;"></canvas>
+                    <div class="mt-3 w-100">
+                        <div class="row g-2">
+                            <div class="col-6"><div style="font-size:0.8rem;display:flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:50%;background:#166534;display:inline-block"></span><span style="color:var(--text-muted)">No DR:</span><strong>{{ stats.no_dr_count }}</strong></div></div>
+                            <div class="col-6"><div style="font-size:0.8rem;display:flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:50%;background:#1d4ed8;display:inline-block"></span><span style="color:var(--text-muted)">Mild:</span><strong>{{ stats.mild_count }}</strong></div></div>
+                            <div class="col-6"><div style="font-size:0.8rem;display:flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:50%;background:#92400e;display:inline-block"></span><span style="color:var(--text-muted)">Moderate:</span><strong>{{ stats.moderate_count }}</strong></div></div>
+                            <div class="col-6"><div style="font-size:0.8rem;display:flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:50%;background:#991b1b;display:inline-block"></span><span style="color:var(--text-muted)">Severe:</span><strong>{{ stats.severe_count }}</strong></div></div>
+                            <div class="col-6"><div style="font-size:0.8rem;display:flex;align-items:center;gap:7px"><span style="width:10px;height:10px;border-radius:50%;background:#6b21a8;display:inline-block"></span><span style="color:var(--text-muted)">Prolif.:</span><strong>{{ stats.proliferative_count }}</strong></div></div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5" style="color:var(--text-muted)">
+                        <i class="bi bi-camera" style="font-size:3rem;opacity:0.25"></i>
+                        <p class="mt-3">No scans yet. Run your first analysis!</p>
+                        <a href="{% url 'analyze' %}" class="btn btn-accent btn-sm mt-2">Start Scanning</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card-custom h-100">
+            <div class="card-header-custom justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-clock-history" style="color:var(--accent)"></i>
+                    <span class="card-title-custom">Recent Scans</span>
+                </div>
+                <a href="{% url 'history' %}" style="font-size:0.8rem;color:var(--accent);text-decoration:none;font-weight:600">
+                    View all <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+            <div class="card-body-custom p-0">
+                {% if recent_results %}
+                <table class="table table-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Severity</th>
+                            <th>Confidence</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in recent_results %}
+                        <tr onclick="window.location='{% url 'result_detail' result_id=result.id %}'" style="cursor:pointer">
+                            <td>
+                                <div style="font-weight:600;font-size:0.9rem">{{ result.patient.name }}</div>
+                                <div style="color:var(--text-muted);font-size:0.78rem">Age {{ result.patient.age }}</div>
+                            </td>
+                            <td>
+                                <span class="severity-badge badge-dr-{{ result.predicted_class }}">
+                                    {{ result.get_severity_label }}
+                                </span>
+                            </td>
+                            <td style="font-family:var(--font-mono);font-size:0.85rem;color:var(--accent);font-weight:600">
+                                {{ result.get_confidence_percentage }}
+                            </td>
+                            <td style="color:var(--text-muted);font-size:0.82rem">
+                                {{ result.analyzed_at|date:"M d, Y" }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="text-center py-5" style="color:var(--text-muted)">
+                    <p>No scans yet.</p>
+                    <a href="{% url 'analyze' %}" class="btn btn-accent btn-sm">Run First Scan</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- RECENT PATIENTS -->
+<div class="card-custom">
+    <div class="card-header-custom justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-person-lines-fill" style="color:var(--accent)"></i>
+            <span class="card-title-custom">Recent Patients</span>
+        </div>
+        <a href="{% url 'add_patient' %}" class="btn btn-accent btn-sm">
+            <i class="bi bi-plus me-1"></i>Add Patient
+        </a>
+    </div>
+    <div class="card-body-custom p-0">
+        {% if recent_patients %}
+        <table class="table table-custom mb-0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Age / Gender</th>
+                    <th>Diabetes Duration</th>
+                    <th>Added</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for patient in recent_patients %}
+                <tr>
+                    <td>
+                        <div style="font-weight:600;font-size:0.9rem">{{ patient.name }}</div>
+                        <div style="color:var(--text-muted);font-size:0.78rem">{{ patient.email|default:"No email" }}</div>
+                    </td>
+                    <td style="color:var(--text-secondary)">{{ patient.age }} / {{ patient.get_gender_display }}</td>
+                    <td style="color:var(--text-secondary)">{{ patient.diabetes_duration }} yrs</td>
+                    <td style="color:var(--text-muted);font-size:0.82rem">{{ patient.created_at|date:"M d, Y" }}</td>
+                    <td>
+                        <a href="{% url 'patient_detail' patient_id=patient.id %}" class="btn btn-ghost btn-sm">
+                            View <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-4" style="color:var(--text-muted)">
+            <p>No patients yet.</p>
+            <a href="{% url 'add_patient' %}" class="btn btn-accent btn-sm">Add Your First Patient</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+{% if stats.total_scans > 0 %}
+const chartData = {{ chart_data|safe }};
+const ctx = document.getElementById('drChart').getContext('2d');
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: chartData.labels,
+        datasets: [{
+            data: chartData.data,
+            backgroundColor: ['#166534','#1d4ed8','#92400e','#991b1b','#6b21a8'],
+            borderColor: '#ffffff',
+            borderWidth: 3,
+            hoverOffset: 6,
+        }]
+    },
+    options: {
+        responsive: true,
+        cutout: '68%',
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: (ctx) => {
+                        const total = ctx.dataset.data.reduce((a,b) => a+b, 0);
+                        const pct = ((ctx.parsed/total)*100).toFixed(1);
+                        return ` ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+                    }
+                },
+                backgroundColor: '#fff',
+                titleColor: '#1c1917',
+                bodyColor: '#78716c',
+                borderColor: '#e5e0d8',
+                borderWidth: 1,
+            }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

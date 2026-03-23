@@ -1,0 +1,308 @@
+{% extends 'detection/base.html' %}
+{% block title %}RetinaScan AI — AI-Powered Diabetic Retinopathy Detection{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero-wrap {
+        min-height: 88vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-blob {
+        position: absolute;
+        top: -120px; right: -120px;
+        width: 600px; height: 600px;
+        background: radial-gradient(circle, rgba(26,107,74,0.07) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .hero-blob-2 {
+        position: absolute;
+        bottom: -80px; left: -80px;
+        width: 400px; height: 400px;
+        background: radial-gradient(circle, rgba(196,98,45,0.06) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .eyeball-wrap {
+        width: 220px; height: 220px;
+        background: linear-gradient(135deg, var(--accent-light), #fff);
+        border-radius: 50%;
+        border: 2px solid var(--accent-mid);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 7rem;
+        box-shadow: var(--shadow-lg);
+        animation: floatEye 5s ease-in-out infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes floatEye {
+        0%, 100% { transform: translateY(0) rotate(-2deg); }
+        50% { transform: translateY(-18px) rotate(2deg); }
+    }
+
+    .hero-title {
+        font-family: var(--font-display);
+        font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.1;
+        letter-spacing: -1px;
+    }
+
+    .hero-title em {
+        font-style: italic;
+        color: var(--accent);
+    }
+
+    .hero-sub {
+        font-size: 1.05rem;
+        color: var(--text-muted);
+        line-height: 1.75;
+        max-width: 500px;
+    }
+
+    .tag-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0.3rem 0.9rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    .tag-dot {
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+    }
+
+    .level-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0.75rem 1rem;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        transition: all 0.18s;
+    }
+
+    .level-row:hover {
+        border-color: var(--accent-mid);
+        box-shadow: var(--shadow-sm);
+        transform: translateX(4px);
+    }
+
+    .level-dot {
+        width: 11px; height: 11px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .feat-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 1.8rem;
+        height: 100%;
+        transition: all 0.2s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: var(--accent);
+        transform: scaleX(0);
+        transition: transform 0.25s;
+        transform-origin: left;
+    }
+
+    .feat-card:hover::before { transform: scaleX(1); }
+    .feat-card:hover { box-shadow: var(--shadow-md); transform: translateY(-3px); }
+
+    .feat-icon {
+        font-size: 2.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .feat-title {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .cta-strip {
+        background: var(--accent);
+        border-radius: var(--radius-lg);
+        padding: 3.5rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cta-strip::before {
+        content: '';
+        position: absolute;
+        top: -60px; right: -60px;
+        width: 300px; height: 300px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<div class="hero-wrap py-5">
+    <div class="hero-blob"></div>
+    <div class="hero-blob-2"></div>
+
+    <div class="row align-items-center g-5 w-100">
+        <div class="col-lg-6">
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                <span class="tag-pill"><span class="tag-dot"></span>ResNet50 Deep Learning</span>
+                <span class="tag-pill"><span class="tag-dot" style="background:var(--terra)"></span>Grad-CAM Heatmaps</span>
+                <span class="tag-pill"><span class="tag-dot" style="background:#1d4ed8"></span>5-Class Detection</span>
+            </div>
+
+            <h1 class="hero-title mb-4">
+                Detect Diabetic<br>
+                <em>Retinopathy</em><br>
+                with AI Precision
+            </h1>
+
+            <p class="hero-sub mb-5">
+                Upload retinal fundus images and get instant AI classification.
+                Our ResNet50 model detects DR severity in seconds — complete with
+                Grad-CAM visual explanations showing exactly where the AI looked.
+            </p>
+
+            <div class="d-flex flex-wrap gap-3">
+                <a href="{% url 'register' %}" class="btn btn-accent btn-lg px-4">
+                    <i class="bi bi-person-plus me-2"></i>Get Started Free
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-ghost btn-lg px-4">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Doctor Login
+                </a>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="eyeball-wrap mb-4">👁️</div>
+
+            <div class="d-flex flex-column gap-2">
+                <div class="level-row">
+                    <div class="level-dot" style="background:#166534"></div>
+                    <div style="flex:1"><strong style="font-size:0.88rem">Level 0</strong> — No Diabetic Retinopathy</div>
+                    <span class="severity-badge badge-dr-0">Healthy</span>
+                </div>
+                <div class="level-row">
+                    <div class="level-dot" style="background:#1d4ed8"></div>
+                    <div style="flex:1"><strong style="font-size:0.88rem">Level 1</strong> — Mild DR</div>
+                    <span class="severity-badge badge-dr-1">Mild</span>
+                </div>
+                <div class="level-row">
+                    <div class="level-dot" style="background:#92400e"></div>
+                    <div style="flex:1"><strong style="font-size:0.88rem">Level 2</strong> — Moderate DR</div>
+                    <span class="severity-badge badge-dr-2">Moderate</span>
+                </div>
+                <div class="level-row">
+                    <div class="level-dot" style="background:#991b1b"></div>
+                    <div style="flex:1"><strong style="font-size:0.88rem">Level 3</strong> — Severe DR</div>
+                    <span class="severity-badge badge-dr-3">Severe</span>
+                </div>
+                <div class="level-row">
+                    <div class="level-dot" style="background:#6b21a8"></div>
+                    <div style="flex:1"><strong style="font-size:0.88rem">Level 4</strong> — Proliferative DR</div>
+                    <span class="severity-badge badge-dr-4">Critical</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FEATURES -->
+<section class="py-5">
+    <div class="text-center mb-5">
+        <h2 style="font-family:var(--font-display);font-size:2rem;font-weight:700;letter-spacing:-0.5px">
+            Everything You Need
+        </h2>
+        <p style="color:var(--text-muted);margin-top:0.4rem">
+            Built for ophthalmologists and diabetologists
+        </p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-3">
+            <div class="feat-card">
+                <div class="feat-icon">🧠</div>
+                <div class="feat-title">ResNet50 Transfer Learning</div>
+                <p style="color:var(--text-muted);font-size:0.86rem;line-height:1.6">
+                    ImageNet-pretrained ResNet50 fine-tuned for 5-class DR severity classification.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="feat-card">
+                <div class="feat-icon">🌡️</div>
+                <div class="feat-title">Grad-CAM Heatmaps</div>
+                <p style="color:var(--text-muted);font-size:0.86rem;line-height:1.6">
+                    Visual explanations highlighting which retinal regions drove the AI's decision.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="feat-card">
+                <div class="feat-icon">📊</div>
+                <div class="feat-title">Patient Dashboard</div>
+                <p style="color:var(--text-muted);font-size:0.86rem;line-height:1.6">
+                    Track patient history, scan trends, and severity distribution over time.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="feat-card">
+                <div class="feat-icon">🔐</div>
+                <div class="feat-title">Secure Doctor Login</div>
+                <p style="color:var(--text-muted);font-size:0.86rem;line-height:1.6">
+                    Secure authentication with per-doctor data isolation and session management.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="py-4 mb-4">
+    <div class="cta-strip">
+        <h2 style="font-family:var(--font-display);font-size:2rem;font-weight:700;color:#fff;margin-bottom:0.8rem">
+            Ready to Start Analyzing?
+        </h2>
+        <p style="color:rgba(255,255,255,0.8);margin-bottom:2rem;max-width:460px;margin-left:auto;margin-right:auto">
+            Create your free account, add your first patient, and run your first retinal scan in minutes.
+        </p>
+        <a href="{% url 'register' %}"
+           style="background:#fff;color:var(--accent);font-weight:700;padding:0.75rem 2.2rem;border-radius:var(--radius-sm);text-decoration:none;font-size:1rem;transition:all 0.18s;display:inline-block;">
+            <i class="bi bi-rocket-takeoff me-2"></i>Create Free Account
+        </a>
+    </div>
+</section>
+
+{% endblock %}

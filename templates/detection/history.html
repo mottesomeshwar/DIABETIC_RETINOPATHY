@@ -1,0 +1,67 @@
+{% extends 'detection/base.html' %}
+{% block title %}Scan History — RetinaScan AI{% endblock %}
+{% block content %}
+
+<div class="page-header d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+        <h1 class="page-title">Scan History</h1>
+        <p class="page-subtitle">All retinal scan results across your patients</p>
+    </div>
+    <a href="{% url 'analyze' %}" class="btn btn-accent"><i class="bi bi-camera me-2"></i>New Scan</a>
+</div>
+
+<!-- Filter Bar -->
+<div class="card-custom mb-4">
+    <div class="card-body-custom p-3">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span style="color:var(--text-muted);font-size:0.85rem;font-weight:600">Filter by Severity:</span>
+            <a href="{% url 'history' %}" class="btn btn-sm {% if not severity_filter %}btn-accent{% else %}btn-ghost{% endif %}">All</a>
+            <a href="?severity=0" class="btn btn-sm {% if severity_filter == '0' %}btn-accent{% else %}btn-ghost{% endif %}" style="{% if severity_filter == '0' %}background:var(--bg-no-dr);color:var(--c-no-dr);border-color:var(--c-no-dr);{% endif %}">No DR</a>
+            <a href="?severity=1" class="btn btn-sm {% if severity_filter == '1' %}btn-accent{% else %}btn-ghost{% endif %}" style="{% if severity_filter == '1' %}background:var(--bg-mild);color:var(--c-mild);border-color:var(--c-mild);{% endif %}">Mild</a>
+            <a href="?severity=2" class="btn btn-sm {% if severity_filter == '2' %}btn-accent{% else %}btn-ghost{% endif %}" style="{% if severity_filter == '2' %}background:var(--bg-mod);color:var(--c-mod);border-color:var(--c-mod);{% endif %}">Moderate</a>
+            <a href="?severity=3" class="btn btn-sm {% if severity_filter == '3' %}btn-accent{% else %}btn-ghost{% endif %}" style="{% if severity_filter == '3' %}background:var(--bg-severe);color:var(--c-severe);border-color:var(--c-severe);{% endif %}">Severe</a>
+            <a href="?severity=4" class="btn btn-sm {% if severity_filter == '4' %}btn-accent{% else %}btn-ghost{% endif %}" style="{% if severity_filter == '4' %}background:var(--bg-prolif);color:var(--c-prolif);border-color:var(--c-prolif);{% endif %}">Proliferative</a>
+        </div>
+    </div>
+</div>
+
+{% if results %}
+<div class="card-custom">
+    <div class="card-body-custom p-0">
+        <table class="table table-custom mb-0">
+            <thead>
+                <tr><th>#</th><th>Patient</th><th>Severity</th><th>Confidence</th><th>Image</th><th>Date</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr>
+                    <td style="color:var(--text-muted);font-size:0.8rem;font-family:var(--font-mono)">#{{ result.id }}</td>
+                    <td>
+                        <div style="font-weight:600;font-size:0.9rem">{{ result.patient.name }}</div>
+                        <div style="color:var(--text-muted);font-size:0.78rem">Age {{ result.patient.age }}</div>
+                    </td>
+                    <td><span class="severity-badge badge-dr-{{ result.predicted_class }}">{{ result.get_severity_label }}</span></td>
+                    <td style="font-family:var(--font-mono);color:var(--accent);font-weight:600">{{ result.get_confidence_percentage }}</td>
+                    <td>
+                        {% if result.image %}
+                        <img src="{{ result.image.url }}" alt="thumb" style="width:46px;height:46px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">
+                        {% else %}<span style="color:var(--text-muted)">—</span>{% endif %}
+                    </td>
+                    <td style="color:var(--text-muted);font-size:0.82rem">{{ result.analyzed_at|date:"M d, Y" }}<br><span style="font-size:0.75rem">{{ result.analyzed_at|time:"H:i" }}</span></td>
+                    <td><a href="{% url 'result_detail' result_id=result.id %}" class="btn btn-ghost btn-sm"><i class="bi bi-eye me-1"></i>View</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card-custom text-center py-5">
+    <div style="font-size:4rem;opacity:0.2">🔬</div>
+    <h3 style="font-family:var(--font-display);color:var(--text-secondary);margin-top:1rem">No results found</h3>
+    <p style="color:var(--text-muted)">{% if severity_filter %}No scans match the selected severity filter.{% else %}No scans yet.{% endif %}</p>
+    <a href="{% url 'analyze' %}" class="btn btn-accent mt-3">Run First Scan</a>
+</div>
+{% endif %}
+
+{% endblock %}

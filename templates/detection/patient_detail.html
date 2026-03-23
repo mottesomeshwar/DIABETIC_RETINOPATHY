@@ -1,0 +1,68 @@
+{% extends 'detection/base.html' %}
+{% block title %}{{ patient.name }} — RetinaScan AI{% endblock %}
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'patient_list' %}" class="btn btn-ghost btn-sm"><i class="bi bi-arrow-left me-1"></i>Back to Patients</a>
+</div>
+
+<div class="card-custom mb-4">
+    <div class="card-body-custom p-4">
+        <div class="row align-items-center g-4">
+            <div class="col-auto">
+                <div style="width:68px;height:68px;background:var(--accent-light);border:2px solid var(--accent-mid);
+                            border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2rem;">
+                    {% if patient.gender == 'M' %}👨{% elif patient.gender == 'F' %}👩{% else %}🧑{% endif %}
+                </div>
+            </div>
+            <div class="col">
+                <h2 style="font-family:var(--font-display);font-weight:700;font-size:1.6rem;margin:0">{{ patient.name }}</h2>
+                <div class="d-flex flex-wrap gap-3 mt-2" style="color:var(--text-muted);font-size:0.85rem">
+                    <span><i class="bi bi-calendar me-1"></i>Age {{ patient.age }}</span>
+                    <span><i class="bi bi-gender-ambiguous me-1"></i>{{ patient.get_gender_display }}</span>
+                    <span><i class="bi bi-droplet me-1"></i>{{ patient.diabetes_duration }} yrs with diabetes</span>
+                    {% if patient.phone %}<span><i class="bi bi-phone me-1"></i>{{ patient.phone }}</span>{% endif %}
+                    {% if patient.email %}<span><i class="bi bi-envelope me-1"></i>{{ patient.email }}</span>{% endif %}
+                </div>
+                {% if patient.notes %}<p style="color:var(--text-secondary);font-size:0.85rem;margin-top:0.8rem;margin-bottom:0">📝 {{ patient.notes }}</p>{% endif %}
+            </div>
+            <div class="col-auto d-flex gap-2 flex-wrap">
+                <a href="{% url 'analyze' %}" class="btn btn-accent"><i class="bi bi-camera me-2"></i>New Scan</a>
+                <a href="{% url 'edit_patient' patient_id=patient.id %}" class="btn btn-ghost"><i class="bi bi-pencil me-1"></i>Edit</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-custom">
+    <div class="card-header-custom">
+        <i class="bi bi-clock-history" style="color:var(--accent)"></i>
+        <span class="card-title-custom">Scan History ({{ result_count }})</span>
+    </div>
+    <div class="card-body-custom p-0">
+        {% if results %}
+        <table class="table table-custom mb-0">
+            <thead>
+                <tr><th>Date</th><th>Severity</th><th>Confidence</th><th>Notes</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                {% for result in results %}
+                <tr>
+                    <td style="font-size:0.85rem">{{ result.analyzed_at|date:"M d, Y" }}<br><span style="color:var(--text-muted);font-size:0.78rem">{{ result.analyzed_at|time:"H:i" }}</span></td>
+                    <td><span class="severity-badge badge-dr-{{ result.predicted_class }}">{{ result.get_severity_label }}</span></td>
+                    <td style="font-family:var(--font-mono);color:var(--accent);font-weight:600">{{ result.get_confidence_percentage }}</td>
+                    <td style="color:var(--text-muted);font-size:0.82rem;max-width:200px">{{ result.doctor_notes|truncatechars:60|default:"—" }}</td>
+                    <td><a href="{% url 'result_detail' result_id=result.id %}" class="btn btn-ghost btn-sm"><i class="bi bi-eye me-1"></i>View</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-5" style="color:var(--text-muted)">
+            <i class="bi bi-camera" style="font-size:3rem;opacity:0.2"></i>
+            <p class="mt-3">No scans recorded for {{ patient.name }} yet.</p>
+            <a href="{% url 'analyze' %}" class="btn btn-accent mt-2"><i class="bi bi-camera me-2"></i>Run First Scan</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
